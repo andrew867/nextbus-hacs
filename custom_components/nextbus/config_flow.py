@@ -3,7 +3,7 @@
 from collections import Counter
 import logging
 
-from py_nextbus import NextBusClient
+from .nextbus_client import NextBusClient
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
@@ -15,7 +15,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 
-from .const import CONF_AGENCY, CONF_ROUTE, DOMAIN
+from .const import CONF_AGENCY, CONF_DEBUG, CONF_ROUTE, DOMAIN
 from .util import listify
 
 _LOGGER = logging.getLogger(__name__)
@@ -149,6 +149,7 @@ class NextBusFlowHandler(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self.data[CONF_STOP] = user_input[CONF_STOP]
+            self.data[CONF_DEBUG] = user_input[CONF_DEBUG]
 
             await self.async_set_unique_id(_unique_id_from_data(self.data))
             self._abort_if_unique_id_configured()
@@ -178,6 +179,7 @@ class NextBusFlowHandler(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(
                 {
                     vol.Required(CONF_STOP): _dict_to_select_selector(self._stop_tags),
+                    vol.Optional(CONF_DEBUG, default=False): bool,
                 }
             ),
         )
