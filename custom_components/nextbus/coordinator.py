@@ -69,10 +69,10 @@ class NextBusDataUpdateCoordinator(
                     stop.get("stopId"),
                 ):
                     stop_id = (
-                        stop.get("id")
-                        or stop.get("stopId")
-                        or stop.get("tag")
+                        stop.get("stopId")
                         or stop.get("code")
+                        or stop.get("id")
+                        or stop.get("tag")
                         or input_stop
                     )
                     break

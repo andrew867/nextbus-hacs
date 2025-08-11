@@ -48,7 +48,20 @@ def _get_stop_tags(
     client: NextBusClient, agency_tag: str, route_tag: str
 ) -> dict[str, str]:
     route_config = client.route_details(route_tag, agency_tag)
-    stop_ids = {a["id"]: a["name"] for a in route_config["stops"]}
+
+    stop_ids: dict[str, str] = {}
+    tag_to_stop_id: dict[str, str] = {}
+    for stop in route_config["stops"]:
+        key = (
+            stop.get("stopId")
+            or stop.get("code")
+            or stop.get("id")
+            or stop.get("tag")
+        )
+        tag = stop.get("id") or stop.get("tag") or key
+        if key:
+            stop_ids[key] = stop["name"]
+            tag_to_stop_id[tag] = key
     title_counts = Counter(stop_ids.values())
 
     stop_directions: dict[str, str] = {}
@@ -57,11 +70,12 @@ def _get_stop_tags(
             continue
         for stop in listify(direction["stops"]):
             if isinstance(stop, dict):
-                stop_id = stop.get("id") or stop.get("tag")
+                stop_tag = stop.get("id") or stop.get("tag")
             else:
-                stop_id = stop
-            if stop_id is None:
+                stop_tag = stop
+            if stop_tag is None:
                 continue
+            stop_id = tag_to_stop_id.get(stop_tag, stop_tag)
             stop_directions[stop_id] = direction["name"]
 
     # Append directions for stops with shared titles
