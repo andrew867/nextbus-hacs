@@ -38,6 +38,40 @@ class NextBusDataUpdateCoordinator(
         self._agency = agency
         self._route_stops: set[RouteStop] = set()
         self._predictions: dict[RouteStop, dict[str, Any]] = {}
+        self._stop_id_cache: dict[tuple[str, str], str] = {}
+
+    def _resolve_api_stop_id(self, route_id: str, input_stop: str) -> str:
+        """Resolve a stop tag or code to the API stop id used in predictions."""
+        key = (route_id, input_stop)
+        if key in self._stop_id_cache:
+            return self._stop_id_cache[key]
+
+        stop_id = input_stop
+        try:
+            route_cfg = self.client.route_details(route_id)
+        except (NextBusHTTPError, NextBusFormatError) as err:
+            self.logger.debug(
+                "Unable to resolve stop id for %s/%s: %s", route_id, input_stop, err
+            )
+        else:
+            for stop in route_cfg.get("stops", []):
+                if input_stop in (
+                    stop.get("id"),
+                    stop.get("tag"),
+                    stop.get("code"),
+                    stop.get("stopId"),
+                ):
+                    stop_id = (
+                        stop.get("id")
+                        or stop.get("stopId")
+                        or stop.get("tag")
+                        or stop.get("code")
+                        or input_stop
+                    )
+                    break
+
+        self._stop_id_cache[key] = stop_id
+        return stop_id
 
     def add_stop_route(self, stop_id: str, route_id: str) -> None:
         """Tell coordinator to start tracking a given stop and route."""
@@ -77,7 +111,8 @@ class NextBusDataUpdateCoordinator(
 
         _stops_to_route_stops: dict[str, set[RouteStop]] = {}
         for route_stop in self._route_stops:
-            _stops_to_route_stops.setdefault(route_stop.stop_id, set()).add(route_stop)
+            api_stop_id = self._resolve_api_stop_id(route_stop.route_id, route_stop.stop_id)
+            _stops_to_route_stops.setdefault(api_stop_id, set()).add(route_stop)
 
         self.logger.debug(
             "Updating data from API. Routes: %s", str(_stops_to_route_stops)
@@ -110,10 +145,14 @@ class NextBusDataUpdateCoordinator(
                 )
 
                 for route_stop in route_stops:
+                    resolved = self._resolve_api_stop_id(
+                        route_stop.route_id, route_stop.stop_id
+                    )
                     for prediction_result in prediction_results:
                         if (
-                            prediction_result["stop"]["id"] == route_stop.stop_id
-                            and prediction_result["route"]["id"] == route_stop.route_id
+                            prediction_result["route"]["id"] == route_stop.route_id
+                            and prediction_result["stop"]["id"]
+                            in {route_stop.stop_id, resolved}
                         ):
                             predictions[route_stop] = prediction_result
                             break
