@@ -61,20 +61,20 @@ class DummyClient:
     def route_details(self, route_tag, agency_tag):
         return {
             "stops": [
-                {"id": "s1", "name": "Main St"},
-                {"id": "s2", "name": "Main St"},
-                {"id": "s3", "name": "Third St"},
+                {"id": "t1", "stopId": "s1", "name": "Main St"},
+                {"id": "t2", "stopId": "s2", "name": "Main St"},
+                {"id": "t3", "stopId": "s3", "name": "Third St"},
             ],
             "directions": [
                 {
                     "name": "North",
                     "useForUi": True,
-                    "stops": [{"id": "s1"}, {"id": "s2"}],
+                    "stops": [{"id": "t1"}, {"id": "t2"}],
                 },
                 {
                     "name": "South",
                     "useForUi": True,
-                    "stops": [{"id": "s3"}],
+                    "stops": [{"id": "t3"}],
                 },
             ],
         }
