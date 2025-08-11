@@ -55,8 +55,14 @@ def _get_stop_tags(
     for direction in listify(route_config["directions"]):
         if not direction["useForUi"]:
             continue
-        for stop in direction["stops"]:
-            stop_directions[stop] = direction["name"]
+        for stop in listify(direction["stops"]):
+            if isinstance(stop, dict):
+                stop_id = stop.get("id") or stop.get("tag")
+            else:
+                stop_id = stop
+            if stop_id is None:
+                continue
+            stop_directions[stop_id] = direction["name"]
 
     # Append directions for stops with shared titles
     for stop_id, title in stop_ids.items():
