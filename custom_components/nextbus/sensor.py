@@ -90,11 +90,6 @@ class NextBusDepartureSensor(
         msg = f"{self.agency}:{self.route}:{self.stop}:{message}"
         _LOGGER.debug(msg, *args)
 
-    def _log_err(self, message, *args):
-        """Log error message with prefix."""
-        msg = f"{self.agency}:{self.route}:{self.stop}:{message}"
-        _LOGGER.error(msg, *args)
-
     async def async_added_to_hass(self) -> None:
         """Read data from coordinator after adding to hass."""
         self._handle_coordinator_update()
@@ -107,8 +102,12 @@ class NextBusDepartureSensor(
 
         self._log_debug("Predictions results: %s", results)
 
-        if not results:
-            self._log_err("Error getting predictions: %s", str(results))
+        if results is None:
+            # If the coordinator did not return any data for this route/stop
+            # combination, treat it as no predictions available but avoid
+            # logging an error which can be noisy when a stop is temporarily
+            # offline or misconfigured.
+            self._log_debug("No prediction data available")
             self._attr_native_value = None
             self._attr_extra_state_attributes.pop("upcoming", None)
             return

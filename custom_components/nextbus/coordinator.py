@@ -166,9 +166,18 @@ class NextBusDataUpdateCoordinator(
                             predictions[route_stop] = prediction_result
                             break
                     else:
-                        self.logger.warning(
+                        # If the API does not return predictions for the requested
+                        # route/stop combination, log at debug and provide an empty
+                        # prediction result so downstream consumers can handle the
+                        # missing data without spamming the log.
+                        self.logger.debug(
                             "Prediction not found for %s (executor)", str(route_stop)
                         )
+                        predictions[route_stop] = {
+                            "route": {"id": route_stop.route_id, "title": route_stop.route_id},
+                            "stop": {"id": route_stop.stop_id, "name": route_stop.stop_id},
+                            "values": [],
+                        }
 
             self._predictions = predictions
 
