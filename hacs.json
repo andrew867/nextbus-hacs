@@ -1,5 +1,6 @@
 {
   "name": "NextBus integration",
   "render_readme": true,
-  "domain": "nextbus"
+  "domain": "nextbus",
+  "filename": "next-bus-card.js"
 }

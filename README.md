@@ -15,6 +15,10 @@ This project packages the core [`nextbus` integration](https://github.com/home-a
 
 Use the Home Assistant UI to configure the integration via **Settings → Devices & services → Add integration** and search for "NextBus".
 
+When adding the integration you can optionally enable **debug logging**. This will increase the verbosity of the integration's logs which can be helpful when troubleshooting.
+
+This repository also includes a basic Lovelace card. After installing the integration copy the resource `/hacsfiles/next-bus-card.js` into your dashboard resources and use the `next-bus-card` type in your views to display upcoming departures.
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.

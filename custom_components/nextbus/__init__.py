@@ -5,7 +5,7 @@ from homeassistant.const import CONF_STOP, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 
-from .const import CONF_AGENCY, CONF_ROUTE, DOMAIN
+from .const import CONF_AGENCY, CONF_DEBUG, CONF_ROUTE, DOMAIN
 from .coordinator import NextBusDataUpdateCoordinator
 
 PLATFORMS = [Platform.SENSOR]
@@ -23,7 +23,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         coordinator_key,
     )
     if coordinator is None:
-        coordinator = NextBusDataUpdateCoordinator(hass, entry_agency)
+        coordinator = NextBusDataUpdateCoordinator(
+            hass, entry_agency, entry.data.get(CONF_DEBUG, False)
+        )
         hass.data[DOMAIN][coordinator_key] = coordinator
 
     coordinator.add_stop_route(entry_stop, entry.data[CONF_ROUTE])

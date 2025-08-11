@@ -4,8 +4,11 @@ from datetime import datetime, timedelta
 import logging
 from typing import Any, override
 
-from py_nextbus import NextBusClient
-from py_nextbus.client import NextBusFormatError, NextBusHTTPError
+from .nextbus_client import (
+    NextBusClient,
+    NextBusFormatError,
+    NextBusHTTPError,
+)
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -25,7 +28,7 @@ class NextBusDataUpdateCoordinator(
 ):
     """Class to manage fetching NextBus data."""
 
-    def __init__(self, hass: HomeAssistant, agency: str) -> None:
+    def __init__(self, hass: HomeAssistant, agency: str, debug: bool = False) -> None:
         """Initialize a global coordinator for fetching data for a given agency."""
         super().__init__(
             hass,
@@ -39,8 +42,10 @@ class NextBusDataUpdateCoordinator(
         self._route_stops: set[RouteStop] = set()
         self._predictions: dict[RouteStop, dict[str, Any]] = {}
         self._stop_id_cache: dict[tuple[str, str], str] = {}
+        if debug:
+            logging.getLogger(__package__).setLevel(logging.DEBUG)
 
-    def _resolve_api_stop_id(self, route_id: str, input_stop: str) -> str:
+    async def _async_resolve_api_stop_id(self, route_id: str, input_stop: str) -> str:
         """Resolve a stop tag or code to the API stop id used in predictions."""
         key = (route_id, input_stop)
         if key in self._stop_id_cache:
@@ -48,7 +53,9 @@ class NextBusDataUpdateCoordinator(
 
         stop_id = input_stop
         try:
-            route_cfg = self.client.route_details(route_id)
+            route_cfg = await self.hass.async_add_executor_job(
+                self.client.route_details, route_id
+            )
         except (NextBusHTTPError, NextBusFormatError) as err:
             self.logger.debug(
                 "Unable to resolve stop id for %s/%s: %s", route_id, input_stop, err
@@ -110,9 +117,13 @@ class NextBusDataUpdateCoordinator(
             return self._predictions
 
         _stops_to_route_stops: dict[str, set[RouteStop]] = {}
+        _resolved_ids: dict[RouteStop, str] = {}
         for route_stop in self._route_stops:
-            api_stop_id = self._resolve_api_stop_id(route_stop.route_id, route_stop.stop_id)
+            api_stop_id = await self._async_resolve_api_stop_id(
+                route_stop.route_id, route_stop.stop_id
+            )
             _stops_to_route_stops.setdefault(api_stop_id, set()).add(route_stop)
+            _resolved_ids[route_stop] = api_stop_id
 
         self.logger.debug(
             "Updating data from API. Routes: %s", str(_stops_to_route_stops)
@@ -145,9 +156,7 @@ class NextBusDataUpdateCoordinator(
                 )
 
                 for route_stop in route_stops:
-                    resolved = self._resolve_api_stop_id(
-                        route_stop.route_id, route_stop.stop_id
-                    )
+                    resolved = _resolved_ids[route_stop]
                     for prediction_result in prediction_results:
                         if (
                             prediction_result["route"]["id"] == route_stop.route_id
