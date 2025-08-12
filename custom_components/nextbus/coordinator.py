@@ -20,7 +20,8 @@ _LOGGER = logging.getLogger(__name__)
 
 # At what percentage of the request limit should the coordinator pause making requests
 UPDATE_INTERVAL_SECONDS = 30
-THROTTLE_PRECENTAGE = 80
+# Typo corrected: percentage spelled correctly
+THROTTLE_PERCENTAGE = 80
 
 
 class NextBusDataUpdateCoordinator(
@@ -104,7 +105,7 @@ class NextBusDataUpdateCoordinator(
             # If we have predictions, check the rate limit
             self._predictions
             # If are over our rate limit percentage, we should throttle
-            and self.client.rate_limit_percent >= THROTTLE_PRECENTAGE
+            and self.client.rate_limit_percent >= THROTTLE_PERCENTAGE
             # But only if we have a reset time to unthrottle
             and self.client.rate_limit_reset is not None
             # Unless we are after the reset time
