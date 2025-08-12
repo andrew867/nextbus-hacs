@@ -2,6 +2,7 @@ import sys
 import types
 from pathlib import Path
 
+
 package = types.ModuleType("nextbus")
 package.__path__ = [
     str(Path(__file__).resolve().parents[1] / "custom_components" / "nextbus")
@@ -10,9 +11,11 @@ sys.modules["nextbus"] = package
 
 ha_config_entries = types.ModuleType("config_entries")
 
+
 class DummyConfigFlow:
     def __init_subclass__(cls, **kwargs):
         pass
+
 
 ha_config_entries.ConfigFlow = DummyConfigFlow
 ha_config_entries.ConfigFlowResult = object
@@ -25,7 +28,12 @@ ha_const.Platform = types.SimpleNamespace(SENSOR="sensor")
 sys.modules["homeassistant.const"] = ha_const
 
 ha_selector = types.ModuleType("selector")
-class Dummy: pass
+
+
+class Dummy:
+    pass
+
+
 ha_selector.SelectOptionDict = Dummy
 ha_selector.SelectSelector = Dummy
 ha_selector.SelectSelectorConfig = Dummy
@@ -41,9 +49,13 @@ ha_exceptions.ConfigEntryNotReady = type("ConfigEntryNotReady", (Exception,), {}
 sys.modules["homeassistant.exceptions"] = ha_exceptions
 
 requests = types.ModuleType("requests")
+
+
 class DummySession:
     def get(self, *args, **kwargs):
         raise RuntimeError
+
+
 requests.Session = DummySession
 requests.HTTPError = Exception
 sys.modules["requests"] = requests
@@ -54,7 +66,7 @@ vol.Required = lambda x: x
 vol.Optional = lambda x, default=None: x
 sys.modules["voluptuous"] = vol
 
-from nextbus.config_flow import _get_stop_tags
+from nextbus.config_flow import _get_stop_tags  # noqa: E402
 
 
 class DummyClient:

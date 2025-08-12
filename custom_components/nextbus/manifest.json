@@ -7,5 +7,6 @@
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/nextbus",
   "iot_class": "cloud_polling",
+  "quality_scale": "gold",
   "version": "0.1.0"
 }

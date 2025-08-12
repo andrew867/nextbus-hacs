@@ -5,7 +5,10 @@ from pathlib import Path
 def load_client():
     spec = importlib.util.spec_from_file_location(
         "nextbus_client",
-        Path(__file__).resolve().parents[1] / "custom_components" / "nextbus" / "nextbus_client.py",
+        Path(__file__).resolve().parents[1]
+        / "custom_components"
+        / "nextbus"
+        / "nextbus_client.py",
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
