@@ -118,13 +118,11 @@ class NextBusDataUpdateCoordinator(
             return self._predictions
 
         _stops_to_route_stops: dict[str, set[RouteStop]] = {}
-        _resolved_ids: dict[RouteStop, str] = {}
         for route_stop in self._route_stops:
             api_stop_id = await self._async_resolve_api_stop_id(
                 route_stop.route_id, route_stop.stop_id
             )
             _stops_to_route_stops.setdefault(api_stop_id, set()).add(route_stop)
-            _resolved_ids[route_stop] = api_stop_id
 
         self.logger.debug(
             "Updating data from API. Routes: %s", str(_stops_to_route_stops)
@@ -157,13 +155,8 @@ class NextBusDataUpdateCoordinator(
                 )
 
                 for route_stop in route_stops:
-                    resolved = _resolved_ids[route_stop]
                     for prediction_result in prediction_results:
-                        if (
-                            prediction_result["route"]["id"] == route_stop.route_id
-                            and prediction_result["stop"]["id"]
-                            in {route_stop.stop_id, resolved}
-                        ):
+                        if prediction_result["route"]["id"] == route_stop.route_id:
                             predictions[route_stop] = prediction_result
                             break
                     else:
