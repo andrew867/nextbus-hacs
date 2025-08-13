@@ -1,0 +1,41 @@
+blueprint:
+  name: Notify when NextBus is approaching
+  description: Send a notification when a bus is within a specified number of minutes.
+  domain: automation
+  input:
+    nextbus_sensor:
+      name: NextBus sensor
+      selector:
+        entity:
+          domain: sensor
+          integration: nextbus
+    minutes:
+      name: Minutes threshold
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: minutes
+    notify_service:
+      name: Notification service
+      default: notify.notify
+      selector:
+        text:
+variables:
+  sensor: !input nextbus_sensor
+  threshold: !input minutes
+  mins: >-
+    {{ state_attr(sensor, 'upcoming').split(',')[0]|int(default=999) }}
+trigger:
+  - platform: state
+    entity_id: !input nextbus_sensor
+condition:
+  - condition: template
+    value_template: "{{ mins <= threshold }}"
+action:
+  - service: !input notify_service
+    data:
+      message: >-
+        Next bus for {{ state_attr(trigger.entity_id, 'route') }} at {{ state_attr(trigger.entity_id, 'stop') }} arrives in {{ mins }} minutes.
+mode: restart

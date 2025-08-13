@@ -12,6 +12,8 @@ Custom [Home Assistant](https://www.home-assistant.io/) integration for fetching
 - Fetches live predictions from the NextBus public API
 - Simple configuration via the Home Assistant UI
 - Optional Lovelace card for displaying upcoming departures
+- Built-in request timeouts and error handling for improved reliability
+- Automation blueprints for notifications and MQTT publishing
 - Fully tested with `pytest`
 
 ## Installation
@@ -33,6 +35,15 @@ Custom [Home Assistant](https://www.home-assistant.io/) integration for fetching
 2. Click **Add Integration** and search for **NextBus**.
 3. Enter the agency and stop information when prompted.
 4. Save to create the entity.
+
+### Automation Blueprints
+
+Two blueprints are included to help you automate around bus arrivals:
+
+- **Publish NextBus predictions to MQTT** – forwards sensor data to an MQTT topic.
+- **Notify when NextBus is approaching** – sends a notification when a bus is within a configurable number of minutes.
+
+Import the blueprints from the `blueprints/automation/nextbus` directory into Home Assistant to use them.
 
 ### Lovelace Card
 After copying `next-bus-card.js` into your dashboard resources, create a card using the `next-bus-card` type:
