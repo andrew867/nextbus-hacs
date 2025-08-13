@@ -1,0 +1,33 @@
+blueprint:
+  name: Publish NextBus predictions to MQTT
+  description: Automatically publish NextBus sensor data to the internal MQTT broker.
+  domain: automation
+  input:
+    nextbus_sensor:
+      name: NextBus sensor
+      description: Sensor providing NextBus predictions
+      selector:
+        entity:
+          domain: sensor
+          integration: nextbus
+    mqtt_topic:
+      name: MQTT topic
+      description: Topic to publish prediction data
+      selector:
+        text:
+trigger:
+  - platform: state
+    entity_id: !input nextbus_sensor
+action:
+  - service: mqtt.publish
+    data:
+      topic: !input mqtt_topic
+      payload: >-
+        {{ {
+            'next_departure': states(trigger.entity_id),
+            'upcoming': state_attr(trigger.entity_id, 'upcoming'),
+            'agency': state_attr(trigger.entity_id, 'agency'),
+            'route': state_attr(trigger.entity_id, 'route'),
+            'stop': state_attr(trigger.entity_id, 'stop')
+        } | to_json }}
+mode: restart

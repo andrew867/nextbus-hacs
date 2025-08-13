@@ -58,6 +58,7 @@ class DummySession:
 
 requests.Session = DummySession
 requests.HTTPError = Exception
+requests.RequestException = Exception
 sys.modules["requests"] = requests
 
 vol = types.ModuleType("voluptuous")

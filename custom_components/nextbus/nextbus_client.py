@@ -1,11 +1,13 @@
 """Client for UmoIQ NextBus publicJSONFeed API."""
 from __future__ import annotations
 
+"""Client for UmoIQ NextBus publicJSONFeed API."""
 from typing import Any, cast
 
 from datetime import datetime
 
 import requests
+from requests import RequestException
 
 
 class NextBusError(Exception):
@@ -28,17 +30,21 @@ class NextBusClient:
     """Minimal client for the UmoIQ NextBus JSON feed."""
 
     BASE_URL = "https://webservices.umoiq.com/service/publicJSONFeed"
+    DEFAULT_TIMEOUT = 10
 
-    def __init__(self, agency_id: str | None = None) -> None:
+    def __init__(self, agency_id: str | None = None, *, timeout: int = DEFAULT_TIMEOUT) -> None:
         self.agency_id = agency_id
         self._session = requests.Session()
+        self._timeout = timeout
         self._rate_limit: int = 0
         self._rate_limit_remaining: int = 0
         self._rate_limit_reset: datetime | None = None
 
     def _get(self, params: dict[str, Any]) -> dict[str, Any]:
         try:
-            response = self._session.get(self.BASE_URL, params=params)
+            response = self._session.get(
+                self.BASE_URL, params=params, timeout=self._timeout
+            )
             response.raise_for_status()
 
             self._rate_limit = int(response.headers.get("X-RateLimit-Limit", 0))
@@ -53,6 +59,8 @@ class NextBusClient:
             return cast(dict[str, Any], response.json())
         except requests.HTTPError as exc:  # pragma: no cover - network
             raise NextBusHTTPError("Error from the NextBus API", exc.response) from exc
+        except RequestException as exc:  # pragma: no cover - network
+            raise NextBusHTTPError("Error communicating with NextBus API") from exc
         except ValueError as exc:  # pragma: no cover - invalid JSON
             raise NextBusFormatError("Failed to parse JSON from request") from exc
 

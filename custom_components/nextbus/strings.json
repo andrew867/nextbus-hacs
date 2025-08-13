@@ -4,20 +4,24 @@
     "step": {
       "agency": {
         "title": "Select metro agency",
+        "description": "Choose the transit agency that operates your route.",
         "data": {
           "agency": "Metro agency"
         }
       },
       "route": {
         "title": "Select route",
+        "description": "Select route for {agency}.",
         "data": {
           "route": "Route"
         }
       },
       "stop": {
         "title": "Select stop",
+        "description": "Select stop for {route} ({agency}).",
         "data": {
-          "stop": "Stop"
+          "stop": "Stop",
+          "debug": "Enable debug logging"
         }
       }
     },

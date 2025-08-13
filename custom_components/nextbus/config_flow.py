@@ -159,6 +159,9 @@ class NextBusFlowHandler(ConfigFlow, domain=DOMAIN):
                     ),
                 }
             ),
+            description_placeholders={
+                "agency": self._agency_tags[self.data[CONF_AGENCY]]
+            },
         )
 
     async def async_step_stop(
@@ -202,4 +205,8 @@ class NextBusFlowHandler(ConfigFlow, domain=DOMAIN):
                     vol.Optional(CONF_DEBUG, default=False): bool,
                 }
             ),
+            description_placeholders={
+                "agency": self._agency_tags[self.data[CONF_AGENCY]],
+                "route": self._route_tags[self.data[CONF_ROUTE]],
+            },
         )
